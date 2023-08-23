@@ -1,0 +1,70 @@
+---
+title: "Day8_interactive"
+format: html
+editor: visual
+---
+
+## Review Basics of ggplot
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+
+library(patchwork)
+library(ggrepel)
+library(gghighlight)
+library(paletteer)
+
+```
+
+## Read in data
+
+```{r}
+lizards <- read_csv(here("data_tidy","lizards.csv"))
+```
+
+Do some data wrangling to create a new subset from lizards where you:
+
+1.  Limit the data to only contain western whiptails, colorado checkered, and eastern fence lizards
+2.  Add a new column with total length converted to cm
+3.  Group by species and site
+4.  Return a summary table with mean total length and standard deviation of total length by species and site
+
+```{r}
+lizards_subset <- lizards %>% 
+  filter(common_name %in% c("western whiptail", "colorado checkered", "eastern fence")) %>% 
+  mutate(total_length_cm = total_length*0.1) %>% 
+  group_by(common_name,site) %>% 
+  summarize(mean_total_length = mean(total_length_cm, na.rm = TRUE), sd_total_length = sd(total_length_cm,na.rm = TRUE))
+```
+
+```{r}
+ggplot(data = lizards, aes(x = total_length, y = weight))+
+  geom_point(aes(color = common_name))+
+  facet_wrap(~common_name, scales = "free")
+```
+
+```{r}
+lizard_counts <- lizards %>% 
+  dplyr::count(common_name)
+
+lizards %>% 
+  group_by(common_name) %>% 
+  summarize(n = n())
+
+#use dplyr::count to find the total number of lizards  by common name in the lizards dataset
+#these both do the same thing
+```
+
+```{r}
+ggplot(lizard_counts, aes(y = fct_reorder(common_name, n), x = n))+
+  geom_col()
+```
+
+```{r}
+ggplot(lizards, aes(x = total_length, y = weight, color = weight))+
+  geom_point()+
+  scale_y_continuous(limits = c(0,100), breaks = seq(from = 0, to = 100, by = 20), expand = c(0,0))+
+  scale_color_gradientn(colors = c("purple","orange", "yellow"))
+```
